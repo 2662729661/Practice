@@ -36,7 +36,7 @@ public class HomeController {
         }
 
         @RequestMapping(value = "/viewXSLT")
-        public ModelAndView viewXSLT(HttpServletRequest request,HttpServletResponse response) throws IOException {
+        public ModelAndView viewXSLT(HttpServletRequest request, HttpServletResponse response) throws IOException {
                 // builds absolute path of the XML file
                 String xmlFile = "resources/citizens.xml";
                 String contextPath = request.getServletContext().getRealPath("");
@@ -47,12 +47,11 @@ public class HomeController {
                 // adds the XML source file to the model so the XsltView can detect
                 ModelAndView model = new ModelAndView("XSLTView");
                 model.addObject("xmlSource", source);
-
                 return model;
         }
 
         @RequestMapping(value = "/viewXSLTtry")
-        public ModelAndView viewXSLTtry(HttpServletRequest request,HttpServletResponse response) throws IOException {
+        public ModelAndView viewXSLTtry(HttpServletRequest request, HttpServletResponse response) throws IOException {
                 // builds absolute path of the XML file
                 String xmlFile = "resources/myCDcollection_1.xml";
                 String contextPath = request.getServletContext().getRealPath("");
@@ -68,7 +67,7 @@ public class HomeController {
         }
 
         @RequestMapping(value = "/viewXSLTAccessLog")
-        public ModelAndView viewXSLTAccessLog(HttpServletRequest request,HttpServletResponse response) throws IOException {
+        public ModelAndView viewXSLTAccessLog(HttpServletRequest request, HttpServletResponse response) throws IOException {
                 // builds absolute path of the XML file
                 String xmlFile = "resources/accessLog.xml";
                 String contextPath = request.getServletContext().getRealPath("");
@@ -506,5 +505,126 @@ public class HomeController {
 //                model.addObject("xmlSource", source);
 //
 //                return model;
+        }
+
+        //无判断方式获取
+        @RequestMapping(value = "/viewXmlS")
+        public void viewXmlS(HttpServletRequest request, HttpServletResponse response) throws Exception {
+                //获取文档对象
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document doc = builder.newDocument();
+
+                //创建请求方法
+                HttpGet httpget = new HttpGet("https://redan-api.herokuapp.com/story/");
+
+                //获取响应对象
+                CloseableHttpResponse response1 = HttpClients.createDefault().execute(httpget);
+
+                //获取响应体
+                HttpEntity entity1 = response1.getEntity();
+                if (entity1 != null) {
+                        //设置编码字符集
+                        String retSrc = EntityUtils.toString(entity1, "UTF-8");
+
+                        //转换为json数据并且获取result中的数据
+                        JSONArray storyList = new JSONObject(retSrc).getJSONArray("result");
+                        //获取根标签的值
+                        JSONObject sx = new JSONObject(retSrc);
+                        String string11 = sx.get("status").toString();
+
+                        //创建根目录
+                        Element document = doc.createElement("document");
+                        document.setAttribute("status", string11);
+                        doc.appendChild(document);
+
+                        //获取所有数据
+                        JSONObject jsonObject = storyList.getJSONObject(0);
+
+                        //获取keys
+                        Iterator<String> keys = jsonObject.keys();
+
+                        //循环
+                        for (int i = 0; i < jsonObject.length(); i++) {
+                                //获取key
+                                String next = keys.next();
+                                //创建标签
+                                Element createElement = doc.createElement(next);
+                                //判断
+                                if (!next.equals("comments") && !next.equals("author")) {
+                                        //添加value
+                                        createElement.setTextContent(jsonObject.get(next).toString());
+                                }
+                                //添加标签
+                                document.appendChild(createElement);
+
+                                //判断是不是Object
+                                if (next.equals("author")) {
+                                        //获取Object
+                                        JSONObject jsonObject1 = jsonObject.getJSONObject(next);
+                                        //获取keys
+                                        Iterator<String> keys1 = jsonObject1.keys();
+                                        //循环
+                                        for (int j = 0; j < jsonObject1.length(); j++) {
+                                                //获取key
+                                                String next1 = keys1.next();
+                                                //创建标签
+                                                Element createElement1 = doc.createElement(next1);
+                                                //添加文本
+                                                createElement1.setTextContent(jsonObject1.get(next1).toString());
+                                                //添加标签
+                                                createElement.appendChild(createElement1);
+                                        }
+                                }
+
+                                //判断是不是Array
+                                if (next.equals("comments")) {
+                                        //获取Array
+                                        JSONArray jsonArray = jsonObject.getJSONArray(next);
+                                        //循环
+                                        for (int j = 0; j < jsonArray.length(); j++) {
+                                                //获取对象
+                                                JSONObject jsonObject1 = jsonArray.getJSONObject(j);
+                                                //获取keys
+                                                Iterator<String> keys1 = jsonObject1.keys();
+                                                //循环
+                                                for (int k = 0; k < jsonObject1.length(); k++) {
+                                                        //获取key
+                                                        String next1 = keys1.next();
+                                                        //创建标签
+                                                        Element createElement1 = doc.createElement(next1);
+                                                        //判断
+                                                        if (!next1.equals("who")) {
+                                                                //添加文本
+                                                                createElement1.setTextContent(jsonObject1.get(next1).toString());
+                                                        }
+                                                        //添加标签
+                                                        createElement.appendChild(createElement1);
+                                                        //判断
+                                                        if (next1.equals("who")) {
+                                                                //获取Object
+                                                                JSONObject jsonObject2 = jsonObject1.getJSONObject(next1);
+                                                                //获取keys
+                                                                Iterator<String> keys2 = jsonObject2.keys();
+                                                                //循环
+                                                                for (int z = 0; z < jsonObject2.length(); z++) {
+                                                                        //获取key
+                                                                        String next2 = keys2.next();
+                                                                        //创建标签
+                                                                        Element createElement2 = doc.createElement(next2);
+                                                                        //添加文本
+                                                                        createElement2.setTextContent(jsonObject2.get(next2).toString());
+                                                                        //添加标签
+                                                                        createElement1.appendChild(createElement2);
+                                                                }
+
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+
+                }
+                TransformerFactory.newInstance().newTransformer().transform(new DOMSource(doc), new StreamResult(response.getOutputStream()));
         }
 }

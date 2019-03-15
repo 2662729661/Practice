@@ -31,6 +31,9 @@
             <p>
                 <b><a href="viewXmlFor">XML-for-each</a></b>
             </p>
+            <p>
+                <b><a href="viewXmlS">无判断类型</a></b>
+            </p>
         </div>
     </body>
 </html>
