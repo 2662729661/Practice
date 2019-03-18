@@ -144,7 +144,7 @@ public class HomeController {
                                         //创建第一层标签
                                         Element nextElement = doc.createElement(next);
                                         //判断值是否是json格式
-                                        if (!string.endsWith("]") && !string.endsWith("}")) {
+                                        if (!(jsonObject.get(next) instanceof JSONObject) && !(jsonObject.get(next) instanceof JSONArray)) {
                                                 System.out.println("1:" + next + "   " + string);
                                                 //添加文本
                                                 nextElement.setTextContent(string);
@@ -152,7 +152,7 @@ public class HomeController {
                                         //添加标签
                                         document.appendChild(nextElement);
                                         //判断第二层是否是json数组
-                                        if (string.endsWith("]")) {
+                                        if (jsonObject.get(next) instanceof JSONArray) {
                                                 //获取json数组
                                                 JSONArray jsonArray = jsonObject.getJSONArray(next);
                                                 //遍历json数组
@@ -170,7 +170,7 @@ public class HomeController {
                                                                 //创建第二层标签
                                                                 Element next1Element = doc.createElement(next1);
                                                                 //判断是否为json对象
-                                                                if (!toString.endsWith("}")) {
+                                                                if (!(jsonObject1.get(next1) instanceof JSONObject)) {
                                                                         System.out.println("2:" + next1 + "     " + toString);
                                                                         //添加文本
                                                                         next1Element.setTextContent(toString);
@@ -178,7 +178,7 @@ public class HomeController {
                                                                 //添加节点
                                                                 nextElement.appendChild(next1Element);
                                                                 //判断第三层是否是json对象
-                                                                if (toString.endsWith("}")) {
+                                                                if (jsonObject1.get(next1) instanceof JSONObject) {
                                                                         //获取json对象
                                                                         JSONObject jsonObject3 = jsonObject1.getJSONObject(next1);
                                                                         //获取key数组
@@ -200,7 +200,7 @@ public class HomeController {
                                                         }
                                                 }
                                                 //判断第二层是否为json对象
-                                        } else if (string.endsWith("}")) {
+                                        } else if (jsonObject.get(next) instanceof JSONObject) {
                                                 //获取json对象
                                                 JSONObject jsonObject2 = jsonObject.getJSONObject(next);
                                                 //获取对象的key数组
